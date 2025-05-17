@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <!-- Métadonnées de base pour le document -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STUDYBOOST - Générateur de fiches de révision</title>
+  
+  <!-- Feuilles de style CSS -->
+  <link rel="stylesheet" href="style.css" /> <!-- Styles personnalisés -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" /> <!-- Icônes Font Awesome -->
+  
+  <!-- Bibliothèques JavaScript pour la génération de PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script> <!-- Bibliothèque html2pdf -->
+  <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script> <!-- Bibliothèque jsPDF -->
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><i class="fas fa-brain"></i> FlashGen</h1>
+      <p class="tagline">Transformez vos cours en fiches de révision interactives avec Mistral AI</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="input">Créer des fiches</button>
+      <button class="tab-btn" data-tab="about">À propos</button>
+    </div>
+
+    <div id="input-tab" class="tab-content active">
+      <div class="input-section">
+        <div class="notice">
+          <p><i class="fas fa-info-circle bold"></i> <span class="bold">Cet outil utilise l'API Mistral pour générer des fiches de révision intelligentes.</span></p>
+          <p class="red bold">⚠️ Attention, n'insérez aucune information confidentielle dans le texte ou PDF soumis. Cela sera transmis à l'IA et pourrait être utilisé pour générer des fiches de révision. ⚠️</p>
+        </div>
+
+        <div class="input-controls">
+          <button id="textInputTab" class="input-type-btn active"><i class="fas fa-edit"></i> Saisir du texte</button>
+          <button id="uploadPdfBtn" class="input-type-btn"><i class="fas fa-file-pdf"></i> Importer un PDF</button>
+        </div>
+
+        <textarea id="inputText" placeholder="Collez ou saisissez votre texte ici (notes de cours, article, etc.)..."></textarea>
+        <form id="pdfUploadForm" class="hidden">
+          <input type="file" id="pdfFile" accept="application/pdf" />
+          <label for="pdfFile" class="custom-file-upload">
+            <i class="fas fa-cloud-upload-alt"></i> Sélectionner un fichier PDF
+          </label>
+          <div id="fileInfo" class="hidden">
+            <span id="fileName"></span>
+            <button id="removeFile" type="button"><i class="fas fa-times"></i></button>
+          </div>
+        </form>
+
+        <div class="generation-options">
+          <div class="option-group">
+            <label for="flashcardCount">Nombre de flashcards:</label>
+            <input type="number" id="flashcardCount" min="5" max="50" value="20">
+          </div>
+          <div class="option-group">
+            <label for="qcmCount">Nombre de questions QCM:</label>
+            <input type="number" id="qcmCount" min="5" max="30" value="15">
+          </div>
+        </div>
+        <br>
+        <button id="generateBtn" class="primary-btn">
+          <i class="fas fa-magic"></i> Générer mes fiches de révision
+        </button>
+        
+        <div class="loader hidden" id="loader">
+          <div class="spinner"></div>
+          <p>Génération en cours...</p>
+        </div>
+      </div>
+
+      <div id="resultSection" class="hidden">
+        <div class="result-tabs">
+          <button class="result-tab-btn active" data-result-tab="flashcards">Flashcards</button>
+          <button class="result-tab-btn" data-result-tab="qcm">QCM</button>
+          <button class="result-tab-btn" data-result-tab="revision">Fiche de révision</button>
+        </div>
+
+        <div id="flashcards-content" class="result-tab-content active">
+          <!-- Flashcards seront insérées ici -->
+          <div class="flashcards-container" id="flashcardsContainer"></div>
+          <div class="flashcards-controls">
+            <button id="prevCard" class="nav-btn"><i class="fas fa-arrow-left"></i></button>
+            <span id="cardCounter">1/20</span>
+            <button id="nextCard" class="nav-btn"><i class="fas fa-arrow-right"></i></button>
+            <button id="exportAnki" class="nav-btn"><i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <div id="qcm-content" class="result-tab-content">
+          <!-- QCM sera inséré ici -->
+          <div class="qcm-container" id="qcmContainer"></div>
+          <button id="checkAnswers" class="primary-btn"><i class="fas fa-check"></i> Vérifier mes réponses</button>
+        </div>
+
+        <div id="revision-content" class="result-tab-content">
+          <!-- Fiche de révision sera insérée ici -->
+          <div class="revision-container" id="revisionContainer"></div>
+          <button id="printRevision" class="secondary-btn"><i class="fas fa-print"></i> Imprimer</button>
+          
+        </div>
+      </div>
+    </div>
+
+    <div id="about-tab" class="tab-content">
+      <div class="about-content">
+        <h2>À propos de FlashGen</h2>
+        <p>FlashGen est un outil d'étude intelligent qui transforme vos textes en matériel d'apprentissage interactif grâce à Mistral AI.</p>
+        
+        <h3>Fonctionnalités</h3>
+        <ul>
+          <li><strong>Flashcards interactives</strong> - Testez votre mémoire avec jusqu'à 50 cartes recto-verso</li>
+          <li><strong>QCM personnalisés</strong> - Évaluez votre compréhension avec jusqu'à 30 questions à choix multiples</li>
+          <li><strong>Fiches de révision</strong> - Consultez des résumés structurés des points clés</li>
+        </ul>
+        
+        <h3>Comment ça marche</h3>
+        <ol>
+          <li>Saisissez votre texte ou importez un PDF</li>
+          <li>Ajustez le nombre de flashcards et questions QCM selon vos besoins</li>
+          <li>Cliquez sur "Générer mes fiches de révision"</li>
+          <li>Explorez les trois types de contenu généré</li>
+          <li>Utilisez les outils interactifs pour réviser efficacement</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+ 
+
+  
+
+  <script src="script.js"></script>
+</body>
+</html>

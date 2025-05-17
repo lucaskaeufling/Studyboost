@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test d'affichage des images</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fb;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        h1 {
+            color: #2563eb;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .image-test-container {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .image-test {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .image-test img {
+            max-width: 100%;
+            max-height: 200px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .image-info {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .error {
+            color: #e53e3e;
+            font-weight: bold;
+        }
+        .success {
+            color: #38a169;
+            font-weight: bold;
+        }
+        .test-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #2563eb;
+        }
+        .img-status {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test d'affichage des images</h1>
+        
+        <div class="image-test-container">
+            <h2>Test 1: Image par défaut</h2>
+            <div class="image-test">
+                <div class="image-info">Cette image devrait toujours s'afficher:</div>
+                <img src="/broken-image.png" alt="Image par défaut" id="default-img">
+                <div class="img-status" id="default-img-status">Chargement...</div>
+            </div>
+        </div>
+        
+        <div class="image-test-container">
+            <h2>Test 2: Image qui n'existe pas</h2>
+            <div class="image-test">
+                <div class="image-info">Cette image ne devrait pas s'afficher:</div>
+                <img src="/nonexistent-image.jpg" alt="Image inexistante" id="nonexistent-img" onerror="document.getElementById('nonexistent-img-status').innerHTML = '<span class=\'error\'>L\'image n\'a pas pu être chargée (C\'est normal pour ce test)</span>';">
+                <div class="img-status" id="nonexistent-img-status">Chargement...</div>
+            </div>
+        </div>
+        
+        <div class="image-test-container">
+            <h2>Test 3: Image du dossier uploads</h2>
+            <div class="image-test">
+                <div class="image-info">Test d'accès au dossier uploads:</div>
+                <div id="uploads-test">
+                    <input type="text" id="image-path" placeholder="/uploads/pdf_images/subfolder/image.jpg" style="width: 80%; padding: 5px; margin-bottom: 10px;">
+                    <div class="test-buttons">
+                        <button onclick="testImage()">Tester cette image</button>
+                    </div>
+                    <div id="test-result" style="margin-top: 15px;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="image-test-container">
+            <h2>Diagnostic du serveur</h2>
+            <div>
+                <button onclick="runServerDiagnostic()">Exécuter le diagnostic</button>
+                <div id="diagnostic-result" style="margin-top: 15px; white-space: pre-wrap; font-family: monospace;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Vérifier l'image par défaut
+        document.getElementById('default-img').onload = function() {
+            document.getElementById('default-img-status').innerHTML = '<span class="success">L\'image a été chargée avec succès</span>';
+        };
+        document.getElementById('default-img').onerror = function() {
+            document.getElementById('default-img-status').innerHTML = '<span class="error">L\'image n\'a pas pu être chargée</span>';
+        };
+        
+        // Fonction pour tester une image spécifique
+        function testImage() {
+            const imagePath = document.getElementById('image-path').value;
+            if (!imagePath) {
+                alert('Veuillez entrer un chemin d\'image');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('test-result');
+            resultDiv.innerHTML = `
+                <div class="image-info">Test de l'image: ${imagePath}</div>
+                <img src="${imagePath}" alt="Image de test" id="test-img" style="max-width: 100%; max-height: 200px;">
+                <div class="img-status" id="test-img-status">Chargement...</div>
+            `;
+            
+            document.getElementById('test-img').onload = function() {
+                document.getElementById('test-img-status').innerHTML = `
+                    <span class="success">L'image a été chargée avec succès</span>
+                    <div style="margin-top: 5px;">Dimensions: ${this.naturalWidth}x${this.naturalHeight}px</div>
+                `;
+            };
+            
+            document.getElementById('test-img').onerror = function() {
+                document.getElementById('test-img-status').innerHTML = `
+                    <span class="error">L'image n'a pas pu être chargée</span>
+                    <div style="margin-top: 5px;">Vérifiez que le chemin est correct et que l'image existe sur le serveur.</div>
+                `;
+            };
+        }
+        
+        // Fonction pour exécuter un diagnostic du serveur
+        function runServerDiagnostic() {
+            const diagnosticResult = document.getElementById('diagnostic-result');
+            diagnosticResult.innerHTML = 'Exécution du diagnostic...';
+            
+            fetch('/check-image-dirs')
+                .then(response => response.json())
+                .then(data => {
+                    let resultHTML = '=== RÉSULTAT DU DIAGNOSTIC ===\n\n';
+                    
+                    if (data.success) {
+                        resultHTML += '✅ Le diagnostic s\'est bien déroulé\n\n';
+                    } else {
+                        resultHTML += '❌ Le diagnostic a rencontré des problèmes\n\n';
+                    }
+                    
+                    resultHTML += '== Structure des dossiers ==\n';
+                    resultHTML += data.directories.map(dir => `${dir.exists ? '✅' : '❌'} ${dir.path}`).join('\n');
+                    
+                    resultHTML += '\n\n== Fichiers ==\n';
+                    if (data.files && data.files.length > 0) {
+                        resultHTML += data.files.map(file => `- ${file}`).join('\n');
+                    } else {
+                        resultHTML += 'Aucun fichier image trouvé dans les dossiers spécifiés';
+                    }
+                    
+                    if (data.error) {
+                        resultHTML += '\n\n== Erreurs ==\n';
+                        resultHTML += data.error;
+                    }
+                    
+                    diagnosticResult.innerHTML = resultHTML;
+                })
+                .catch(error => {
+                    diagnosticResult.innerHTML = `Erreur lors de l'exécution du diagnostic: ${error.message}`;
+                });
+        }
+    </script>
+</body>
+</html> 
