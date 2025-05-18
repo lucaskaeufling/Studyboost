@@ -6,6 +6,10 @@ const pdfParse = require('pdf-parse');
 const fs = require('fs-extra');
 const app = express();
 
+app.get('/sitemap.xml', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'sitemap.xml'));
+});
+
 // Vérification du module mistral.js
 try {
   const mistralModule = require('./mistral.js');
